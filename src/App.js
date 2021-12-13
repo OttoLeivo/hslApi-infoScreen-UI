@@ -2,16 +2,69 @@ import logo from './logo.svg';
 import './App.css';
 import React from 'react';
 
-const L_QUERY2 = `{
-  stops(name: "Herttoniemenranta") {
+//550 karttalaskuri
+//serviceday + scheduledArrival = Unix Timestamp time
+// ilkantie H1632 ja HSL:1293139
+
+/*const L_QUERY2 = `{
+  stops(name: "ilkantie") {
     name
-    lat
-    id
-    lon
-    
-    wheelchairBoarding
+    code
+    gtfsId
+  }
+
+}`*/
+
+//Ilkantiepysäkki
+const L_QUERY2 = `{
+  stop(id: "HSL:1293139") {
+    name
+    code
+        stoptimesWithoutPatterns(numberOfDepartures: 5) {
+      stop {
+        platformCode
+        code
+        id
+      }
+      serviceDay
+      scheduledArrival
+      scheduledDeparture
+      trip {
+        route {
+          shortName
+        }
+      }
+      headsign
+      
+    }
   }
 }`
+
+/*const L_QUERY2 = `{
+  stops(name: "Eliel Saarisen") {
+    code
+    name
+      id
+    stoptimesWithoutPatterns(numberOfDepartures: 5) {
+      stop {
+        platformCode
+        code
+        id
+      }
+      serviceDay
+      scheduledArrival
+      scheduledDeparture
+      trip {
+        route {
+          shortName
+        }
+      }
+      headsign
+      
+    }
+  }
+
+}`*/
 
 function App() {
  React.useEffect(() => {
