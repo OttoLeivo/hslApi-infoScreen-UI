@@ -22,7 +22,6 @@ const L_QUERY2 = `{
     code
         stoptimesWithoutPatterns(numberOfDepartures: 5) {
       stop {
-        platformCode
         code
         id
       }
@@ -67,13 +66,22 @@ const L_QUERY2 = `{
 }`*/
 
 function App() {
+  const [launches, setLaunces] = React.useState([])
+  
+  /*var utcSeconds = 1;
+  var d = new Date(0); // The 0 there is the key, which sets the date to the epoch
+  d.setUTCSeconds(utcSeconds);
+  console.log(d)*/
+  
  React.useEffect(() => {
 fetch('https://api.digitransit.fi/routing/v1/routers/hsl/index/graphql', {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({query : L_QUERY2})
 }).then(response => response.json())
-.then(data => console.log(data))
+.then(data => setLaunces(data.data.stop.stoptimesWithoutPatterns))
+//.then(data => console.log(data))
+//.stoptimesWithoutPatterns
 
   }, [])
 
@@ -92,9 +100,14 @@ fetch('https://api.digitransit.fi/routing/v1/routers/hsl/index/graphql', {
         >
           Learn React
         </a>    
-           {
-           }
-         
+        {console.log(launches[0])}
+        <h1>
+            {launches.map(x => (
+              <li key={x.scheduledArrival}>{x.trip.route.shortName}{" saapuu: "}{x.serviceDay+x.scheduledArrival}</li>
+            ))}
+        </h1>
+
+
       </header>
     </div>
   );
