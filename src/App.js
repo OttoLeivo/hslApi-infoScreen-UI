@@ -1,19 +1,9 @@
-import logo from './logo.svg';
 import './App.css';
 import React from 'react';
 
 //550 karttalaskuri
 //serviceday + scheduledArrival = Unix Timestamp time
 // ilkantie H1632 ja HSL:1293139
-
-/*const L_QUERY2 = `{
-  stops(name: "ilkantie") {
-    name
-    code
-    gtfsId
-  }
-
-}`*/
 
 //Ilkantiepysäkki
 const L_QUERY2 = `{
@@ -39,33 +29,52 @@ const L_QUERY2 = `{
   }
 }`
 
-/*const L_QUERY2 = `{
-  stops(name: "Eliel Saarisen") {
-    code
-    name
-      id
-    stoptimesWithoutPatterns(numberOfDepartures: 5) {
-      stop {
-        platformCode
-        code
-        id
-      }
-      serviceDay
-      scheduledArrival
-      scheduledDeparture
-      trip {
-        route {
-          shortName
-        }
-      }
-      headsign
-      
-    }
-  }
-
-}`*/
-
 function App() {
+const launches = useLaunches()
+
+function calc(x, y){
+  let unixT = x + y 
+  console.log("Unix "+unixT)
+
+  let paiva1 = new Date(unixT * 1000)
+
+  let datenowUnix = Math.floor(Date.now()/1000)
+  console.log("date now "+Math.floor(Date.now()/1000))
+
+  let diffrence = unixT-datenowUnix
+  console.log("diffrence "+diffrence)
+
+  let answer = unixT + diffrence
+  console.log("answer "+answer)
+  
+  let paiva2 = new Date(diffrence * 1000)
+  console.log("paiva2 "+paiva2)
+  
+  //paiva1.toString()
+
+  //console.log("paiva1 "+paiva1)
+  //console.log(paiva1.getMinutes())
+  
+  return(paiva2.getMinutes().toString())
+}
+  return (
+    <div className="App">
+      <header className="App-header"> 
+        <h1>
+            {launches.map(x => (
+              <li key={x.scheduledArrival}>
+                {"bus "+x.trip.route.shortName+" saapuu: "}{calc(x.serviceDay, x.scheduledArrival)}
+              </li>
+            ))}
+        </h1>
+      </header>
+    </div>
+  );
+}
+
+
+
+function useLaunches() {
   const [launches, setLaunces] = React.useState([])
   
   /*var utcSeconds = 1;
@@ -84,33 +93,7 @@ fetch('https://api.digitransit.fi/routing/v1/routers/hsl/index/graphql', {
 //.stoptimesWithoutPatterns
 
   }, [])
-
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>    
-        {console.log(launches[0])}
-        <h1>
-            {launches.map(x => (
-              <li key={x.scheduledArrival}>{x.trip.route.shortName}{" saapuu: "}{x.serviceDay+x.scheduledArrival}</li>
-            ))}
-        </h1>
-
-
-      </header>
-    </div>
-  );
+  return launches
 }
 
 export default App;
