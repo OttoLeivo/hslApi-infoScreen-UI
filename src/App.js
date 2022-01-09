@@ -3,10 +3,32 @@ import React from 'react';
 
 //550 karttalaskuri
 //serviceday + scheduledArrival = Unix Timestamp time
-// ilkantie H1632 ja HSL:1293139
 
-//Ilkantiepysäkki
-const L_QUERY2 = `{
+//ilkantie H1632 ja HSL:1293139 => itäkeskus
+const ilkantieItaK_query = `{
+  stop(id: "HSL:1293139") {
+    name
+    code
+        stoptimesWithoutPatterns(numberOfDepartures: 5) {
+      stop {
+        code
+        id
+      }
+      serviceDay
+      scheduledArrival
+      scheduledDeparture
+      trip {
+        route {
+          shortName
+        }
+      }
+      headsign
+      
+    }
+  }
+}`
+
+const ilkantieWestend_query = `{
   stop(id: "HSL:1293139") {
     name
     code
@@ -32,38 +54,46 @@ const L_QUERY2 = `{
 function App() {
 const launches = useLaunches()
 
+//calculates unix time to readable time and returns it as date
 function calc(x, y){
-  let unixT = x + y 
-  console.log("Unix "+unixT)
 
-  let paiva1 = new Date(unixT * 1000)
+  // arrival of bus = serviceDay(current day 00 am) + scheduledArrival(seconds from the beginning of the day) 
+  let arrivalUnixT = x + y 
+  //console.log("arrivalUnixT "+arrivalUnixT)
 
+  //current time as unix time
   let datenowUnix = Math.floor(Date.now()/1000)
-  console.log("date now "+Math.floor(Date.now()/1000))
-
-  let diffrence = unixT-datenowUnix
-  console.log("diffrence "+diffrence)
-
-  let answer = unixT + diffrence
-  console.log("answer "+answer)
+  //console.log("datenow unix variable"+datenowUnix)
   
-  let paiva2 = new Date(diffrence * 1000)
-  console.log("paiva2 "+paiva2)
-  
-  //paiva1.toString()
+  //if bus already gone, need to add +1 otherwise shows next bus in 59 minutes
+  /*if(arrivalUnixT<datenowUnix){
+    arrivalUnixT = datenowUnix
+  }*/
 
-  //console.log("paiva1 "+paiva1)
-  //console.log(paiva1.getMinutes())
+  //arrival of bus - current time = arrival time
+  let diffrence = arrivalUnixT-datenowUnix
+  //console.log("arrivalUnixT - datenowUnix = diffrence "+diffrence)
   
-  return(paiva2.getMinutes().toString())
+  //diffrence unix time to readable date
+  if(diffrence<0){
+    return("Meni jo")
+  }
+  else{
+    let paiva = new Date(diffrence * 1000)
+   //console.log("paiva2(diffrence) "+paiva)
+    return(paiva.getMinutes().toString()+" min")
+  }
+
 }
+
   return (
     <div className="App">
       <header className="App-header"> 
+      <h1>Itäkeskus/Kannelmäki H1632</h1>
         <h1>
             {launches.map(x => (
               <li key={x.scheduledArrival}>
-                {"bus "+x.trip.route.shortName+" saapuu: "}{calc(x.serviceDay, x.scheduledArrival)}
+                {x.trip.route.shortName+" saapuu: "}{calc(x.serviceDay, x.scheduledArrival)}
               </li>
             ))}
         </h1>
@@ -73,24 +103,16 @@ function calc(x, y){
 }
 
 
-
 function useLaunches() {
   const [launches, setLaunces] = React.useState([])
-  
-  /*var utcSeconds = 1;
-  var d = new Date(0); // The 0 there is the key, which sets the date to the epoch
-  d.setUTCSeconds(utcSeconds);
-  console.log(d)*/
   
  React.useEffect(() => {
 fetch('https://api.digitransit.fi/routing/v1/routers/hsl/index/graphql', {
   method: "POST",
   headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({query : L_QUERY2})
+  body: JSON.stringify({query : ilkantieItaK_query})
 }).then(response => response.json())
 .then(data => setLaunces(data.data.stop.stoptimesWithoutPatterns))
-//.then(data => console.log(data))
-//.stoptimesWithoutPatterns
 
   }, [])
   return launches
