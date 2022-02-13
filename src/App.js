@@ -5,6 +5,10 @@ import React from 'react';
 //serviceday + scheduledArrival = Unix Timestamp time
 
 //ilkantie H1632 ja HSL:1293139 => itäkeskus
+//ilkantie H1635 ja HSL:1293164 => Westend
+
+let currentQuary = {}
+
 const ilkantieItaK_query = `{
   stop(id: "HSL:1293139") {
     name
@@ -29,7 +33,7 @@ const ilkantieItaK_query = `{
 }`
 
 const ilkantieWestend_query = `{
-  stop(id: "HSL:1293139") {
+  stop(id: "HSL:1293164") {
     name
     code
         stoptimesWithoutPatterns(numberOfDepartures: 5) {
@@ -51,8 +55,22 @@ const ilkantieWestend_query = `{
   }
 }`
 
+const findBusStop_query = `{
+    stops(name: "ilkan") {
+      gtfsId
+      name
+      code
+      lat
+      lon
+    }
+}`
+
+currentQuary = ilkantieItaK_query
+
 function App() {
-const launches = useLaunches()
+const launches = useLaunches(currentQuary)
+
+
 
 //calculates unix time to readable time and returns it as date
 function calc(x, y){
@@ -89,33 +107,44 @@ function calc(x, y){
   return (
     <div className="App">
       <header className="App-header"> 
-      <h1>Itäkeskus/Kannelmäki H1632</h1>
+      <h1>{stopName(currentQuary)}</h1>   
         <h1>
             {launches.map(x => (
               <li key={x.scheduledArrival}>
-                {x.trip.route.shortName+" saapuu: "}{calc(x.serviceDay, x.scheduledArrival)}
+                {x.trip.route.shortName+" saapuu: "}{calc(x.serviceDay, x.scheduledArrival) }
               </li>
             ))}
         </h1>
+        
       </header>
     </div>
   );
+  
 }
 
 
 function useLaunches() {
   const [launches, setLaunces] = React.useState([])
-  
+
  React.useEffect(() => {
 fetch('https://api.digitransit.fi/routing/v1/routers/hsl/index/graphql', {
   method: "POST",
   headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({query : ilkantieItaK_query})
+  body: JSON.stringify({query : currentQuary  })
 }).then(response => response.json())
+//.then(data => console.log(data)) //for finding the right bus stop gtfsID code
 .then(data => setLaunces(data.data.stop.stoptimesWithoutPatterns))
 
   }, [])
   return launches
+}
+
+//correct header for the table
+function stopName(){
+if (ilkantieItaK_query === currentQuary){
+  return "Itäkeskukseen"}
+else{
+  return "Westendiin"}
 }
 
 export default App;
